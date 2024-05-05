@@ -1,0 +1,75 @@
+#!ipxe
+:Start
+menu iPXE Boot Menu Build 20230520
+item --gap --               ------------------------- Operating systems ------------------------------
+item --key 1 Win11          1) Boot to Windows 11
+item --key 2 WinPE          2) Boot to Windows PE
+item --key 3 WinPE4ISO      3) Boot to Windows PE from ISO
+item --gap --               ------------------------- Advanced options -------------------------------
+item --key c Config         Configure settings
+item Shell                  Drop to iPXE shell
+item Reboot                 Reboot computer
+item
+item --key x Exit           Exit iPXE and continue BIOS boot
+choose --timeout ${menu-timeout} --default ${menu-default} selected || goto Cancel
+set menu-timeout 0
+goto ${selected}
+
+:Config
+config
+goto Start
+
+:Shell
+echo Type 'exit' to get the back to the menu
+shell
+goto Start
+
+:Reboot
+reboot
+
+:Exit
+exit
+
+:Cancel
+echo You cancelled the menu, dropping you to a shell
+
+:Failed
+echo Failed to start, will return to main menu within 3 seconds
+sleep 3
+goto Start
+
+:Win11
+echo
+echo Connect to iSCSI
+echo
+sanhook --drive 0x80 ${iscsi-root-path} || goto Failed
+echo
+echo Boot to Windows
+echo
+sanboot || goto Failed
+goto Start
+
+:WinPE
+echo
+echo Connect to iSCSI
+echo
+sanhook --drive 0x80 ${iscsi-root-path} || goto Failed
+echo
+echo Load to Kernel
+echo
+kernel wimboot
+initrd http://${next-server}/WinPE/BCD                    BCD
+initrd http://${next-server}/WinPE/boot.sdi               boot.sdi
+initrd http://${next-server}/WinPE/boot.wim               boot.wim
+echo
+echo Boot to Windows
+echo
+boot || goto Failed
+goto Start
+
+:WinPE4ISO
+echo
+echo Boot to Windows from ISO
+echo
+sanboot --drive 0xff http://${next-server}/WinPE/boot.iso || goto Failed
+goto Start
