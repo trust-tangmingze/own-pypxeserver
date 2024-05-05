@@ -1,0 +1,3 @@
+#!ipxe
+chain --autofree boot.ipxe.cfg
+chain --autofree --replace menu.ipxe

@@ -1,0 +1,7 @@
+# Boot.wim
+
+## 上下文 (Context)
+
+1. ^ [2023.02 Prepare for deployment with MDT Windows 10 | Microsoft Learn](https://learn.microsoft.com/en-us/windows/deployment/deploy-windows-mdt/prepare-for-windows-deployment-with-mdt) [1]
+2. ^ [2023.02 Create a Windows 10 reference image Windows 10 | Microsoft Learn](https://learn.microsoft.com/en-us/windows/deployment/deploy-windows-mdt/create-a-windows-10-reference-image) [2]
+3. ^ [2020.12 Using Tiny PXE and iPXE to allow UEFI PXE booting on non Server OS / Server 2008 | Dell US](https://www.dell.com/support/kbdoc/en-us/000148982/using-tiny-pxe-and-ipxe-to-allow-uefi-pxe-booting-on-non-server-os-or-server-2008)
