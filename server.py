@@ -21,8 +21,15 @@ class udp_server:
     def __init__(self, debug=False, log_file='server.log'):
         self.separate = 1
         self.path = r'C:\Users\Administrator\Downloads\own-pypxeserver\files'
-        self.kernel = 'ipxe-x86_64.efi'
-        self.menu = 'boot.ipxe'
+        self.dhcpc_port = 68
+        self.dhcpd_port = 67
+        self.proxy_dhcpd_port = 4011
+        self.tftpd_port = 69
+        self.httpd_port = 80
+        self.kernel = 'pxelinux.0'
+        self.menu = 'pxelinux.0'
+        # self.kernel = 'ipxe-x86_64.efi'
+        # self.menu = 'boot.ipxe'
         self.siaddr = '192.168.0.1'
         self.mask = '255.255.255.0'
         self.router = '192.168.0.251'
@@ -84,37 +91,33 @@ class udp_server:
         '''
         return getLogger(f'{child_name}')
     def dhcpc(self, logger):
-        logger.info(f'(68) {self.unicast} started...')
+        logger.info(f'({self.dhcpc_port}) {self.unicast} started...')
         def _stop():
-            logger.info(f'(68) stopped...')
+            logger.info(f'({self.dhcpc_port}) stopped...')
         def _thread():
             another_dhcpd = []
-            socks.bind((self.unicast, 68))
+            socks.bind((self.unicast, self.dhcpc_port))
             while socks is not None:
                 try:
                     msg, addr = socks.recvfrom(65536)
                     dhcp_packet = DHCPPacket.from_bytes(msg)
                 except MalformedPacketError as e:
-                    logger.warning(f'(68) {e}')
+                    logger.warning(f'({self.dhcpc_port}) {e}')
                     continue
                 dhcp_server = dhcp_packet.options.by_code(54)
                 if dhcp_server:
                     dhcp_server = ip_interface(dhcp_server.data).ip
                     if dhcp_server not in another_dhcpd:
                         if not another_dhcpd:
-                            logger.info(f'(68) discovering for another DHCPd on LAN')
-                        logger.info(f'(68) another DHCPd detected on your LAN @ {dhcp_server}')
+                            logger.info(f'({self.dhcpc_port}) discovering for another DHCPd on LAN')
+                        logger.info(f'({self.dhcpc_port}) another DHCPd detected on your LAN @ {dhcp_server}')
                         another_dhcpd.append(dhcp_server)
-                        logger.debug('(68) {} received, MAC {}, XID {}'.format(
-                            dhcp_packet.op, \
-                            dhcp_packet.chaddr, \
-                            dhcp_packet.xid
-                        ))
-                        logger.debug('(68) msg is %s' % msg)
+                        logger.debug(f'({self.dhcpc_port}) {dhcp_packet.op} received, MAC {dhcp_packet.chaddr}, XID {dhcp_packet.xid}')
+                        logger.debug(f'({self.dhcpc_port}) msg is %s' % msg)
         socks = self.udp_socket()
         return {'dhcpc' : {'_thread' : Thread(target=_thread, daemon=True), '_stop' : _stop}}
     def dhcpd(self, logger):
-        logger.info(f'(67) {self.unicast} started...')
+        logger.info(f'({self.dhcpd_port}) {self.unicast} started...')
         def _chaddr_to_yiaddr(chaddr):
             if chaddr not in self.chaddr_to_ipaddr:
                 yiaddr = self.ipaddr_list[0]
@@ -124,15 +127,11 @@ class udp_server:
             return self.chaddr_to_ipaddr[chaddr]
         def _separate(msg, dhcp_packet):
             if dhcp_packet.msg_type == 'DHCPDISCOVER':
-                logger.info('(67) {} received, MAC {}, XID {}'.format(
-                    dhcp_packet.msg_type, \
-                    dhcp_packet.chaddr, \
-                    dhcp_packet.xid
-                ))
-                logger.debug('(67) msg is %s' % msg)
+                logger.info(f'({self.dhcpd_port}) {dhcp_packet.msg_type} received, MAC {dhcp_packet.chaddr}, XID {dhcp_packet.xid}')
+                logger.debug(f'({self.dhcpd_port}) msg is %s' % msg)
                 user_class = dhcp_packet.options.by_code(77)
                 if user_class:
-                    logger.info(f'(67) iPXE user-class detected')
+                    logger.info(f'({self.dhcpd_port}) iPXE user-class detected')
                     fname = self.menu
                 else:
                     fname = self.kernel
@@ -153,32 +152,20 @@ class udp_server:
                     ])
                 )
                 offer_packet.siaddr = ip_interface(self.siaddr).ip
-                logger.info('(67) {} sent, {}:68, XID {}'.format(
-                    offer_packet.msg_type, \
-                    self.broadcast, \
-                    offer_packet.xid
-                ))
+                logger.info(f'({self.dhcpd_port}) {offer_packet.msg_type} sent, {self.broadcast}:{self.dhcpc_port}, XID {offer_packet.xid}')
                 offer_packet = offer_packet.asbytes
-                logger.debug(f'(67) offer_packet is {offer_packet}')
+                logger.debug(f'({self.dhcpd_port}) offer_packet is {offer_packet}')
                 sleep(1) if user_class else ''
-                socks.sendto(offer_packet, (str(self.broadcast), 68))
+                socks.sendto(offer_packet, (str(self.broadcast), self.dhcpc_port))
             else:
-                logger.info('(67) {} discarded, MAC {}, XID {}'.format(
-                    dhcp_packet.msg_type, \
-                    dhcp_packet.chaddr, \
-                    dhcp_packet.xid
-                ))
+                logger.info(f'({self.dhcpd_port}) {dhcp_packet.msg_type} discarded, MAC {dhcp_packet.chaddr}, XID {dhcp_packet.xid}')
         def _combine(msg, dhcp_packet):
             if dhcp_packet.msg_type == 'DHCPDISCOVER':
-                logger.info('(67) {} received, MAC {}, XID {}'.format(
-                    dhcp_packet.msg_type, \
-                    dhcp_packet.chaddr, \
-                    dhcp_packet.xid
-                ))
-                logger.debug('(67) msg is %s' % msg)
+                logger.info(f'({self.dhcpd_port}) {dhcp_packet.msg_type} received, MAC {dhcp_packet.chaddr}, XID {dhcp_packet.xid}')
+                logger.debug(f'({self.dhcpd_port}) msg is %s' % msg)
                 user_class = dhcp_packet.options.by_code(77)
                 if user_class:
-                    logger.info(f'(67) iPXE user-class detected')
+                    logger.info(f'({self.dhcpd_port}) iPXE user-class detected')
                     fname = self.menu
                 else:
                     fname = self.kernel
@@ -205,25 +192,17 @@ class udp_server:
                     ])
                 )
                 offer_packet.siaddr = ip_interface(self.siaddr).ip
-                logger.info('(67) {} sent, {}:68, XID {}'.format(
-                    offer_packet.msg_type, \
-                    self.broadcast, \
-                    offer_packet.xid
-                ))
+                logger.info(f'({self.dhcpd_port}) {offer_packet.msg_type} sent, {self.broadcast}:{self.dhcpc_port}, XID {offer_packet.xid}')
                 offer_packet = offer_packet.asbytes
-                logger.debug(f'(67) offer_packet is {offer_packet}')
+                logger.debug(f'({self.dhcpd_port}) offer_packet is {offer_packet}')
                 sleep(1) if user_class else ''
-                socks.sendto(offer_packet, (str(self.broadcast), 68))
+                socks.sendto(offer_packet, (str(self.broadcast), self.dhcpc_port))
             if dhcp_packet.msg_type == 'DHCPREQUEST':
-                logger.info('(67) {} received, MAC {}, XID {}'.format(
-                    dhcp_packet.msg_type, \
-                    dhcp_packet.chaddr, \
-                    dhcp_packet.xid
-                ))
-                logger.debug('(67) msg is %s' % msg)
+                logger.info(f'({self.dhcpd_port}) {dhcp_packet.msg_type} received, MAC {dhcp_packet.chaddr}, XID {dhcp_packet.xid}')
+                logger.debug(f'({self.dhcpd_port}) msg is %s' % msg)
                 user_class = dhcp_packet.options.by_code(77)
                 if user_class:
-                    logger.info(f'(67) iPXE user-class detected')
+                    logger.info(f'({self.dhcpd_port}) iPXE user-class detected')
                     fname = self.menu
                 else:
                     fname = self.kernel
@@ -250,24 +229,20 @@ class udp_server:
                     ])
                 )
                 ack_packet.siaddr = ip_interface(self.siaddr).ip
-                logger.info('(67) {} sent, {}:68, XID {}'.format(
-                    ack_packet.msg_type, \
-                    self.broadcast, \
-                    ack_packet.xid
-                ))
+                logger.info(f'({self.dhcpd_port}) {ack_packet.msg_type} sent, {self.broadcast}:{self.dhcpc_port}, XID {ack_packet.xid}')
                 ack_packet = ack_packet.asbytes
-                logger.debug(f'(67) ack_packet is {ack_packet}')
-                socks.sendto(ack_packet, (str(self.broadcast), 68))
+                logger.debug(f'({self.dhcpd_port}) ack_packet is {ack_packet}')
+                socks.sendto(ack_packet, (str(self.broadcast), self.dhcpc_port))
         def _stop():
-            logger.info(f'(67) stopped...')
+            logger.info(f'({self.dhcpd_port}) stopped...')
         def _thread():
-            socks.bind((self.unicast, 67))
+            socks.bind((self.unicast, self.dhcpd_port))
             while socks is not None:
                 try:
                     msg, addr = socks.recvfrom(65536)
                     dhcp_packet = DHCPPacket.from_bytes(msg)
                 except MalformedPacketError as e:
-                    logger.warning(f'(67) {e}')
+                    logger.warning(f'({self.dhcpd_port}) {e}')
                     continue
                 vendor_class = dhcp_packet.options.by_code(60)
                 if vendor_class:
@@ -275,27 +250,23 @@ class udp_server:
         socks = self.udp_socket()
         return {'dhcpd' : {'_thread' : Thread(target=_thread, daemon=True), '_stop' : _stop}}
     def proxy_dhcpd(self, logger):
-        logger.info(f'(4011) {self.siaddr} started...')
+        logger.info(f'({self.proxy_dhcpd_port}) {self.siaddr} started...')
         def _stop():
-            logger.info(f'(4011) stopped...')
+            logger.info(f'({self.proxy_dhcpd_port}) stopped...')
         def _thread():
-            socks.bind((self.siaddr, 4011))
+            socks.bind((self.siaddr, self.proxy_dhcpd_port))
             while socks is not None:
                 try:
                     msg, addr = socks.recvfrom(65536)
                     dhcp_packet = DHCPPacket.from_bytes(msg)
                 except MalformedPacketError as e:
-                    logger.warning(f'(4011) {e}')
+                    logger.warning(f'({self.proxy_dhcpd_port}) {e}')
                     continue
                 uuid_guid_based_client = dhcp_packet.options.by_code(97)
                 if uuid_guid_based_client:
-                    logger.info('(4011) {} received, MAC {}, XID {}'.format(
-                        dhcp_packet.msg_type, \
-                        dhcp_packet.chaddr, \
-                        dhcp_packet.xid
-                    ))
-                    logger.debug('(4011) msg is %s' % msg)
-                    logger.info(f'(4011) Proxy boot filename empty?')
+                    logger.info(f'({self.proxy_dhcpd_port}) {dhcp_packet.msg_type} received, MAC {dhcp_packet.chaddr}, XID {dhcp_packet.xid}')
+                    logger.debug(f'({self.proxy_dhcpd_port}) msg is %s' % msg)
+                    logger.info(f'({self.proxy_dhcpd_port}) Proxy boot filename empty?')
                     fname = dhcp_packet.file if dhcp_packet.file else self.kernel
                     ack_packet = DHCPPacket.Ack(
                         seconds=0, \
@@ -315,33 +286,29 @@ class udp_server:
                         ])
                     )
                     ack_packet.siaddr = ip_interface(self.siaddr).ip
-                    logger.info('(4011) {} sent, {}:4011, XID {}'.format(
-                        ack_packet.msg_type, \
-                        dhcp_packet.ciaddr, \
-                        ack_packet.xid
-                    ))
+                    logger.info(f'({self.proxy_dhcpd_port}) {ack_packet.msg_type} sent, {dhcp_packet.ciaddr}:{self.proxy_dhcpd_port}, XID {ack_packet.xid}')
                     ack_packet = ack_packet.asbytes
-                    logger.debug(f'(4011) ack_packet is {ack_packet}')
-                    socks.sendto(ack_packet, (str(dhcp_packet.ciaddr), 4011))
+                    logger.debug(f'({self.proxy_dhcpd_port}) ack_packet is {ack_packet}')
+                    socks.sendto(ack_packet, (str(dhcp_packet.ciaddr), self.proxy_dhcpd_port))
         socks = self.udp_socket()
         return {'proxy_dhcpd' : {'_thread' : Thread(target=_thread, daemon=True), '_stop' : _stop}}
     def tftpd(self, logger, path):
-        logger.info(f'(69) {self.unicast} started...')
+        logger.info(f'({self.tftpd_port}) {self.unicast} started...')
         def _stop():
-            logger.info(f'(69) stopped...')
+            logger.info(f'({self.tftpd_port}) stopped...')
         def _thread():
-            server.listen(self.unicast, 69)
+            server.listen(self.unicast, self.tftpd_port)
         server = TftpServer(tftproot=path, logger=logger)
         return {'tftpd' : {'_thread' : Thread(target=_thread, daemon=True), '_stop' : _stop}}
     def httpd(self, logger, path):
-        logger.info(f'(80) {self.unicast} started...')
+        logger.info(f'({self.httpd_port}) {self.unicast} started...')
         def _stop():
-            logger.info(f'(80) stopped...')
+            logger.info(f'({self.httpd_port}) stopped...')
         def _thread():
             server.serve_forever()
-        server = HTTPServer((self.unicast, 80), partial(SimpleHTTPRequestHandler, directory=path, logger=logger))
+        server = HTTPServer((self.unicast, self.httpd_port), partial(SimpleHTTPRequestHandler, directory=path, logger=logger))
         return {'httpd' : {'_thread' : Thread(target=_thread, daemon=True), '_stop' : _stop}}
 
 if __name__ == '__main__':
-    server = udp_server(debug=True)
+    server = udp_server(debug=True, log_file='server.log')
     server.start(dhcpc=True, dhcpd=True, proxy_dhcpd=True, tftpd=True, httpd=True)
