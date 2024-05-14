@@ -4,7 +4,7 @@ from server import udp_server
 
 from tkinter import Tk, Frame, Button, Checkbutton, filedialog, Entry, Label, \
     BooleanVar, StringVar, IntVar
-from multiprocessing import Process
+from multiprocessing import Pool
 from os.path import abspath
 
 def server(debug=True, log_file='server.log'):
@@ -34,9 +34,8 @@ def start(**kwargs):
     s.unicast = kwargs.get('unicast')
     s.broadcast = kwargs.get('broadcast')
     s.start(dhcpc=kwargs.get('dhcpc'), dhcpd=kwargs.get('dhcpd'), proxy_dhcpd=kwargs.get('proxy_dhcpd'), tftpd=kwargs.get('tftpd'), httpd=kwargs.get('httpd'))
-def stop(p):
-    if p.is_alive():
-        p.terminate()
+def stop(pool):
+    pool.close()
     windows.destroy()
     windows.quit()
 
@@ -84,7 +83,8 @@ if __name__ == '__main__':
     Entry(frame, textvariable=entry_unicast, width=14).grid(row=13, column=1)
     Label(frame, text='broadcast').grid(row=14, column=0)
     Entry(frame, textvariable=entry_broadcast, width=14).grid(row=14, column=1)
-    p = Process(daemon=True, target=start, kwargs={ \
+    pool = Pool(processes=1)
+    Button(frame, text='start', command=lambda: pool.apply_async(func=start, kwds={ \
         'debug':checkbutton_debug.get(), \
         'log_file':entry_log_file.get(), \
         'separate':entry_separate.get(), \
@@ -110,34 +110,6 @@ if __name__ == '__main__':
         'proxy_dhcpd':checkbutton_proxy_dhcpd.get(), \
         'tftpd':checkbutton_tftpd.get(), \
         'httpd':checkbutton_httpd.get() \
-    })
-    # p = Process(target=lambda: start( \
-    #     debug=checkbutton_debug.get(), \
-    #     log_file=entry_log_file.get(), \
-    #     separate=entry_separate.get(), \
-    #     path=entry_path.get(), \
-    #     dhcpc_port=entry_dhcpc_port.get(), \
-    #     dhcpd_port=entry_dhcpd_port.get(), \
-    #     proxy_dhcpd_port=entry_proxy_dhcpd_port.get(), \
-    #     tftpd_port=entry_tftpd_port.get(), \
-    #     httpd_port=entry_httpd_port.get(), \
-    #     kernel=entry_kernel.get(), \
-    #     menu=entry_menu.get(), \
-    #     siaddr=entry_siaddr.get(), \
-    #     mask=entry_mask.get(), \
-    #     router=entry_router.get(), \
-    #     dns=entry_dns.get(), \
-    #     begin=entry_begin.get(), \
-    #     end=entry_end.get(), \
-    #     lease_time=entry_lease_time.get(), \
-    #     unicast=entry_unicast.get(), \
-    #     broadcast=entry_broadcast.get(), \
-    #     dhcpc=checkbutton_dhcpc.get(), \
-    #     dhcpd=checkbutton_dhcpd.get(), \
-    #     proxy_dhcpd=checkbutton_proxy_dhcpd.get(), \
-    #     tftpd=checkbutton_tftpd.get(), \
-    #     httpd=checkbutton_httpd.get() \
-    # ))
-    Button(frame, text='start', command=lambda: p.start()).grid(row=15, column=0)
-    Button(frame, text='stop', command=lambda: stop(p)).grid(row=15, column=1)
+    })).grid(row=15, column=0)
+    Button(frame, text='stop', command=lambda: stop(pool)).grid(row=15, column=1)
     windows.mainloop()
