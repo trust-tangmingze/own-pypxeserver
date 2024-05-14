@@ -30,7 +30,7 @@ def start(**kwargs):
     s.dns = kwargs.get('dns')
     s.begin = kwargs.get('begin')
     s.end = kwargs.get('end')
-    s.lease_time = 120
+    s.lease_time = kwargs.get('lease_time')
     s.unicast = kwargs.get('unicast')
     s.broadcast = kwargs.get('broadcast')
     s.start(dhcpc=kwargs.get('dhcpc'), dhcpd=kwargs.get('dhcpd'), proxy_dhcpd=kwargs.get('proxy_dhcpd'), tftpd=kwargs.get('tftpd'), httpd=kwargs.get('httpd'))
