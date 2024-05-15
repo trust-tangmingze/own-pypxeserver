@@ -70,7 +70,7 @@ class udp_server:
             self.threadings.update(self.httpd(logger=self.get_short_logger('HTTPd'), path=self.path)) if httpd else httpd
             # thread to start
             [dicts['_thread'].start() for dicts in self.threadings.values() if dicts is not None]
-            while all(map(lambda dicts: dicts['_thread'].is_alive(), self.threadings.values())):
+            while all([dicts['_thread'].is_alive() for dicts in self.threadings.values()]):
                 sleep(1)
         except KeyboardInterrupt:
             [dicts['_stop']() for dicts in self.threadings.values() if dicts is not None]
