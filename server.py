@@ -18,7 +18,7 @@ from threading import Thread
 from time import sleep
 
 class udp_server:
-    def __init__(self, debug=False, log_file='server.log'):
+    def __init__(self, logger=None, debug=False, log_file='server.log'):
         self.separate = 1
         self.path = r'C:\Users\Administrator\Downloads\own-pypxeserver\files'
         self.dhcpc_port = 68
@@ -52,7 +52,7 @@ class udp_server:
                 StreamHandler()
             ]
         )
-        self.logger = getLogger('udp_server')
+        self.logger = logger if logger else getLogger('udp_server')
         # threading
         self.threadings = {}
     def start(self, dhcpc=True, dhcpd=True, proxy_dhcpd=True, tftpd=True, httpd=True):
