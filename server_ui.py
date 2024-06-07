@@ -4,8 +4,11 @@ from server import udp_server
 
 from tkinter import Tk, Frame, Button, Checkbutton, filedialog, Entry, Label, \
     BooleanVar, StringVar, IntVar
+from tkinter.ttk import Combobox
 from multiprocessing import Pool
 from os.path import abspath
+from re import findall
+from wmi import WMI
 
 def server(debug=True, log_file='server.log'):
     '''
@@ -38,13 +41,21 @@ def stop(pool):
     pool.close()
     windows.destroy()
     windows.quit()
+def combobox_selected_mac(*args):
+    interface = list(filter(lambda dicts: dicts['macaddr'] == combobox_mac_var.get(), interfaces))[0]
+    entry_siaddr.set(value=interface['siaddr'])
+    entry_mask.set(value=interface['mask'])
+    entry_router.set(value=interface['router'])
+    entry_begin.set(value=findall(r'(?<!\d)\d{1,3}\.\d{1,3}\.\d{1,3}(?=\.\d)', interface['siaddr'])[0] + '.100')
+    entry_end.set(value=findall(r'(?<!\d)\d{1,3}\.\d{1,3}\.\d{1,3}(?=\.\d)', interface['siaddr'])[0] + '.110')
 
 if __name__ == '__main__':
     windows = Tk()
     frame = Frame(windows)
     frame.grid()
+    interfaces = [{'macaddr' : o.MACAddress, 'siaddr' : o.IPAddress[0] if isinstance(o.IPAddress, tuple) else '', 'mask' : o.IPSubnet[0] if isinstance(o.IPSubnet, tuple) else '', 'router' : o.DefaultIPGateway[0] if isinstance(o.DefaultIPGateway, tuple) else ''} for o in WMI().query("select MACAddress,IPAddress,IPSubnet,DefaultIPGateway from Win32_NetworkAdapterConfiguration where IPEnabled=TRUE")]
     checkbutton_debug, checkbutton_dhcpc, checkbutton_dhcpd, checkbutton_proxy_dhcpd, checkbutton_tftpd, checkbutton_httpd, entry_separate = BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1)
-    entry_log_file, entry_path, entry_kernel, entry_menu, entry_siaddr, entry_mask, entry_router, entry_dns, entry_begin, entry_end, entry_unicast, entry_broadcast = StringVar(value='server.log'), StringVar(value=r'C:\Users\Administrator\Downloads\own-pypxeserver\files'), StringVar(value='pxelinux.0'), StringVar(value='pxelinux.0'), StringVar(value='192.168.0.1'), StringVar(value='255.255.255.0'), StringVar(value='192.168.0.251'), StringVar(value='223.5.5.5'), StringVar(value='192.168.0.100'), StringVar(value='192.168.0.110'), StringVar(value='0.0.0.0'), StringVar(value='255.255.255.255')
+    entry_log_file, entry_path, entry_kernel, entry_menu, entry_siaddr, combobox_mac_var, entry_mask, entry_router, entry_dns, entry_begin, entry_end, entry_unicast, entry_broadcast = StringVar(value='server.log'), StringVar(value=r'C:\Users\Administrator\Downloads\own-pypxeserver\files'), StringVar(value='pxelinux.0'), StringVar(value='pxelinux.0'), StringVar(value='192.168.0.1'), StringVar(value=interfaces[0]['macaddr']), StringVar(value='255.255.255.0'), StringVar(value='192.168.0.251'), StringVar(value='223.5.5.5'), StringVar(value='192.168.0.100'), StringVar(value='192.168.0.110'), StringVar(value='0.0.0.0'), StringVar(value='255.255.255.255')
     entry_dhcpc_port, entry_dhcpd_port, entry_proxy_dhcpd_port, entry_tftpd_port, entry_httpd_port, entry_lease_time = IntVar(value=68), IntVar(value=67), IntVar(value=4011), IntVar(value=69), IntVar(value=80), IntVar(value=120)
     Checkbutton(frame, text='separate', variable=entry_separate).grid(row=0, column=0)
     Checkbutton(frame, text='debug', variable=checkbutton_debug).grid(row=0, column=1)
@@ -67,6 +78,12 @@ if __name__ == '__main__':
     Entry(frame, textvariable=entry_menu, width=14).grid(row=5, column=1)
     Label(frame, text='siaddr').grid(row=6, column=0)
     Entry(frame, textvariable=entry_siaddr, width=14).grid(row=6, column=1)
+    Label(frame, text='macaddr').grid(row=6, column=2)
+    combobox_mac = Combobox(frame, width=15, textvariable=combobox_mac_var, values=[i['macaddr'] for i in tuple(interfaces)])
+    combobox_mac.current(0)
+    combobox_mac.bind('<<ComboboxSelected>>', combobox_selected_mac)
+    combobox_selected_mac()
+    combobox_mac.grid(row=6, column=3)
     Label(frame, text='mask').grid(row=7, column=0)
     Entry(frame, textvariable=entry_mask, width=14).grid(row=7, column=1)
     Label(frame, text='router').grid(row=8, column=0)
