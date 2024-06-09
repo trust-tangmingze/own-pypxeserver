@@ -6,12 +6,12 @@
 1. ^ "Separate standard DHCP and redirection services. PXE redirection servers (Proxy DHCP servers) are added to the existing network environment. They respond only to PXE-enabled clients, and provide only redirection to Boot Servers."
 
 ```plain
-PS C:\Users\Administrator\Downloads\own-pypxeserver> # Install [2017.09 python-3.7.0-amd64.exe | Huaweicloud](https://mirrors.huaweicloud.com/python/3.7.0/python-3.7.0-amd64.exe)
-PS C:\Users\Administrator\Downloads\own-pypxeserver>
-PS C:\Users\Administrator\Downloads\own-pypxeserver> # Install [2023.03 pywin32-306.win-amd64-py3.7.exe | Github](https://github.com/mhammond/pywin32/releases/download/b306/pywin32-306.win-amd64-py3.7.exe)
-PS C:\Users\Administrator\Downloads\own-pypxeserver>
-PS C:\Users\Administrator\Downloads\own-pypxeserver> # Start server.py
-PS C:\Users\Administrator\Downloads\own-pypxeserver> Remove-Item -ErrorAction Ignore -Recurse -Path '.\*.log', '__pycache__' ; python .\server.py
+PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Install [2017.09 python-3.7.0-amd64.exe | Huaweicloud](https://mirrors.huaweicloud.com/python/3.7.0/python-3.7.0-amd64.exe)
+PS C:\Users\ecs-user\Downloads\own-pypxeserver>
+PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Install [2023.03 pywin32-306.win-amd64-py3.7.exe | Github](https://github.com/mhammond/pywin32/releases/download/b306/pywin32-306.win-amd64-py3.7.exe)
+PS C:\Users\ecs-user\Downloads\own-pypxeserver>
+PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Start server.py
+PS C:\Users\ecs-user\Downloads\own-pypxeserver> Remove-Item -ErrorAction Ignore -Recurse -Path '.\*.log', '__pycache__' ; python .\server.py
 ```
 
 ## Infrastructure
