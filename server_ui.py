@@ -42,7 +42,7 @@ def stop(pool):
     windows.destroy()
     windows.quit()
 def combobox_selected_macaddr(*args):
-    interface = list(filter(lambda dicts: dicts['macaddr'] == combobox_mac_var.get(), interfaces))[0]
+    interface = list(filter(lambda dicts: dicts['macaddr'] == combobox_macaddr_var.get(), interfaces))[0]
     entry_siaddr.set(value=interface['siaddr'])
     entry_mask.set(value=interface['mask'])
     entry_router.set(value=interface['router'])
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     frame.grid()
     interfaces = [{'macaddr' : o.MACAddress, 'siaddr' : o.IPAddress[0] if isinstance(o.IPAddress, tuple) else '', 'mask' : o.IPSubnet[0] if isinstance(o.IPSubnet, tuple) else '', 'router' : o.DefaultIPGateway[0] if isinstance(o.DefaultIPGateway, tuple) else ''} for o in WMI().query("select MACAddress,IPAddress,IPSubnet,DefaultIPGateway from Win32_NetworkAdapterConfiguration where IPEnabled=TRUE")]
     checkbutton_debug, checkbutton_dhcpc, checkbutton_dhcpd, checkbutton_proxy_dhcpd, checkbutton_tftpd, checkbutton_httpd, entry_separate = BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1), BooleanVar(value=1)
-    entry_log_file, entry_path, entry_kernel, entry_menu, entry_siaddr, combobox_mac_var, entry_mask, entry_router, entry_dns, entry_begin, entry_end, entry_unicast, entry_broadcast = StringVar(value='server.log'), StringVar(value=r'C:\Users\Administrator\Downloads\own-pypxeserver\files'), StringVar(value='pxelinux.0'), StringVar(value='pxelinux.0'), StringVar(value='192.168.0.1'), StringVar(value=interfaces[0]['macaddr']), StringVar(value='255.255.255.0'), StringVar(value='192.168.0.251'), StringVar(value='223.5.5.5'), StringVar(value='192.168.0.100'), StringVar(value='192.168.0.110'), StringVar(value='0.0.0.0'), StringVar(value='255.255.255.255')
+    entry_log_file, entry_path, entry_kernel, entry_menu, entry_siaddr, combobox_macaddr_var, entry_mask, entry_router, entry_dns, entry_begin, entry_end, entry_unicast, entry_broadcast = StringVar(value='server.log'), StringVar(value=r'C:\Users\Administrator\Downloads\own-pypxeserver\files'), StringVar(value='pxelinux.0'), StringVar(value='pxelinux.0'), StringVar(value='192.168.0.1'), StringVar(value=interfaces[0]['macaddr']), StringVar(value='255.255.255.0'), StringVar(value='192.168.0.251'), StringVar(value='223.5.5.5'), StringVar(value='192.168.0.100'), StringVar(value='192.168.0.110'), StringVar(value='0.0.0.0'), StringVar(value='255.255.255.255')
     entry_dhcpc_port, entry_dhcpd_port, entry_proxy_dhcpd_port, entry_tftpd_port, entry_httpd_port, entry_lease_time = IntVar(value=68), IntVar(value=67), IntVar(value=4011), IntVar(value=69), IntVar(value=80), IntVar(value=120)
     Checkbutton(frame, text='separate', variable=entry_separate).grid(row=0, column=0)
     Checkbutton(frame, text='debug', variable=checkbutton_debug).grid(row=0, column=1)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     Label(frame, text='siaddr').grid(row=6, column=0)
     Entry(frame, textvariable=entry_siaddr, width=14).grid(row=6, column=1)
     Label(frame, text='macaddr').grid(row=6, column=2)
-    combobox_macaddr = Combobox(frame, width=15, textvariable=combobox_mac_var, values=[i['macaddr'] for i in tuple(interfaces)])
+    combobox_macaddr = Combobox(frame, width=15, textvariable=combobox_macaddr_var, values=[i['macaddr'] for i in tuple(interfaces)])
     combobox_macaddr.current(0)
     combobox_macaddr.bind('<<ComboboxSelected>>', combobox_selected_macaddr)
     combobox_selected_macaddr()
