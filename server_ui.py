@@ -41,7 +41,7 @@ def stop(pool):
     pool.close()
     windows.destroy()
     windows.quit()
-def combobox_selected_mac(*args):
+def combobox_selected_macaddr(*args):
     interface = list(filter(lambda dicts: dicts['macaddr'] == combobox_mac_var.get(), interfaces))[0]
     entry_siaddr.set(value=interface['siaddr'])
     entry_mask.set(value=interface['mask'])
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     Label(frame, text='macaddr').grid(row=6, column=2)
     combobox_mac = Combobox(frame, width=15, textvariable=combobox_mac_var, values=[i['macaddr'] for i in tuple(interfaces)])
     combobox_mac.current(0)
-    combobox_mac.bind('<<ComboboxSelected>>', combobox_selected_mac)
-    combobox_selected_mac()
+    combobox_mac.bind('<<ComboboxSelected>>', combobox_selected_macaddr)
+    combobox_selected_macaddr()
     combobox_mac.grid(row=6, column=3)
     Label(frame, text='mask').grid(row=7, column=0)
     Entry(frame, textvariable=entry_mask, width=14).grid(row=7, column=1)
