@@ -17,7 +17,7 @@ PS C:\Users\ecs-user\Downloads\own-pypxeserver> Remove-Item -ErrorAction Ignore 
 ## Infrastructure
 
 ![pypxeserver-soe.png](pypxeserver-soe.png)
-![网鱼交易场地原始金融服务.png](网鱼交易场地原始金融服务.png)
+![原始金融服务网鱼交易场地.png](原始金融服务网鱼交易场地.png)
 
 ## Dot
 
