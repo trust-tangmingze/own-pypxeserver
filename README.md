@@ -12,7 +12,7 @@ PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Install [2023.03 pywin32-306.w
 PS C:\Users\ecs-user\Downloads\own-pypxeserver>
 PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Install [vc_redist.x64.exe | Microsoft](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 PS C:\Users\ecs-user\Downloads\own-pypxeserver>
-PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Start server.py
+PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Start server_ui.py
 PS C:\Users\ecs-user\Downloads\own-pypxeserver> Remove-Item -ErrorAction Ignore -Recurse -Path '.\*.log', '__pycache__' ; python .\server_ui.py
 ```
 
