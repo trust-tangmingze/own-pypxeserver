@@ -10,6 +10,8 @@ PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Install [2017.09 python-3.7.0-
 PS C:\Users\ecs-user\Downloads\own-pypxeserver>
 PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Install [2023.03 pywin32-306.win-amd64-py3.7.exe | Github](https://github.com/mhammond/pywin32/releases/download/b306/pywin32-306.win-amd64-py3.7.exe)
 PS C:\Users\ecs-user\Downloads\own-pypxeserver>
+PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Install [vc_redist.x64.exe | Github](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+PS C:\Users\ecs-user\Downloads\own-pypxeserver>
 PS C:\Users\ecs-user\Downloads\own-pypxeserver> # Start server.py
 PS C:\Users\ecs-user\Downloads\own-pypxeserver> Remove-Item -ErrorAction Ignore -Recurse -Path '.\*.log', '__pycache__' ; python .\server.py
 ```
