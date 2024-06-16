@@ -18,7 +18,7 @@ PS C:\Users\Administrator\Downloads\own-pypxeserver> Remove-Item -ErrorAction Ig
 
 ## Infrastructure
 
-![pypxeserver-soe.png](pypxeserver-soe.png)
+![完全虚拟化解决方案.png](完全虚拟化解决方案.png)
 ![原始金融服务网鱼交易场地.png](原始金融服务网鱼交易场地.png)
 
 ## Dot
